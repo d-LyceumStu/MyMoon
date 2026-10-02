@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Own Moon</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#04050d;--bg2:#0a0e29;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg1)}
+body{background:radial-gradient(ellipse at 50% 110%,#1b2054 0%,var(--bg2) 42%,var(--bg1) 80%);color:#fff;font-family:'Cormorant Garamond',Georgia,serif}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.stage{position:fixed;top:50%;left:50%;width:min(78vmin,620px);aspect-ratio:1;transform:translate(-50%,-50%);animation:float 14s ease-in-out infinite}
+.moon{position:absolute;inset:0;border-radius:50%;overflow:hidden;opacity:.95;
+background:radial-gradient(circle at 34% 30%,#fffef6 0%,#f0ecda 30%,#cdc9b8 62%,#8f8d86 100%);
+box-shadow:0 0 70px 16px rgba(207,216,255,.35),0 0 240px 90px rgba(120,140,255,.18);animation:pulse 8s ease-in-out infinite}
+.moon b{position:absolute;border-radius:50%;background:rgba(120,116,106,.38);filter:blur(10px)}
+.moon i{position:absolute;border-radius:50%;background:radial-gradient(circle at 60% 60%,rgba(110,106,96,.55),rgba(160,156,146,.12) 70%);box-shadow:inset 3px 3px 7px rgba(60,58,52,.4),1px 1px 2px rgba(255,255,255,.55)}
+.moon::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 72% 74%,rgba(4,5,14,.62),transparent 66%)}
+.label{position:absolute;left:0;right:0;bottom:9%;z-index:2;text-align:center;font-size:clamp(1.1rem,3vmin,1.8rem);letter-spacing:.35em;color:rgba(30,32,60,.75)}
+.orbit{position:absolute;inset:-13%;border-radius:50%;border:1px solid rgba(207,216,255,.16);animation:spin 46s linear infinite}
+.orbit::before{content:"";position:absolute;left:50%;top:-4px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,236,200,.85),0 0 30px 10px rgba(255,200,160,.35)}
+@keyframes float{50%{transform:translate(-50%,-53%)}}
+@keyframes pulse{50%{box-shadow:0 0 100px 28px rgba(207,216,255,.45),0 0 280px 110px rgba(120,140,255,.22)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{position:fixed;inset:0;display:grid;place-items:center;padding:6vmin;text-align:center;z-index:3;pointer-events:none}
+.msg{max-width:34ch;text-shadow:0 0 16px rgba(4,5,18,.95),0 0 38px rgba(4,5,18,.85)}
+.sig{font-size:clamp(1rem,2.2vw,1.35rem);font-weight:400;letter-spacing:.3em;margin-bottom:1.1em;opacity:0;animation:in 2.6s ease forwards}
+.txt{font-size:clamp(1.35rem,3.6vw,2.3rem);line-height:1.5;font-weight:300;font-style:italic;opacity:0;animation:in 3.4s ease 1.6s forwards}
+.quiet{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));text-align:center;z-index:3;font-size:1rem;letter-spacing:.2em;color:rgba(207,216,255,.5);opacity:0;animation:in 4s ease 5s forwards}
+@keyframes in{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:blur(0)}}
+#snd{position:fixed;right:14px;top:calc(14px + env(safe-area-inset-top,0px));z-index:5;font:inherit;font-size:1.05rem;color:#dfe6ff;background:rgba(10,14,40,.55);border:1px solid rgba(207,216,255,.35);border-radius:999px;padding:.4em 1em;cursor:pointer;backdrop-filter:blur(6px)}
+#snd:hover,#snd:focus-visible{border-color:#fff;outline:none}
+@media (prefers-reduced-motion:reduce){.stage,.moon,.orbit{animation:none}.sig,.txt,.quiet{animation-duration:.01s;animation-delay:0s}}
+#tb,#hb{position:fixed;z-index:5;font:inherit;color:#dfe6ff;background:rgba(10,14,40,.55);border:1px solid rgba(207,216,255,.35);border-radius:999px;cursor:pointer;backdrop-filter:blur(6px)}
+#tb{left:14px;top:calc(14px + env(safe-area-inset-top,0px));font-size:1.05rem;padding:.4em 1em}
+#hb{right:14px;bottom:calc(40px + env(safe-area-inset-bottom,0px));font-size:.95rem;padding:.3em .9em;opacity:.7}
+#tb:hover,#hb:hover{border-color:#fff}
+.ov{position:fixed;inset:0;z-index:20;display:none;background:rgba(4,5,13,.92);backdrop-filter:blur(8px)}
+.ov.show{display:block}
+.box{height:100dvh;max-width:480px;margin:0 auto;display:flex;flex-direction:column;padding:14px;padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;justify-content:space-between;align-items:center;letter-spacing:.2em;font-size:1.2rem;margin-bottom:10px}
+.x{font:inherit;font-size:1.5rem;color:#dfe6ff;background:none;border:0;cursor:pointer}
+.log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 2px}
+.empty{margin:auto;text-align:center;font-style:italic;font-size:1.6rem;color:rgba(207,216,255,.55)}
+.bub{max-width:85%;padding:.5em .9em;border-radius:14px;font-size:1.15rem;line-height:1.4;background:rgba(207,216,255,.14);align-self:flex-end;white-space:pre-wrap;word-break:break-word}
+.bub.me2{align-self:flex-start;background:rgba(255,236,200,.18)}
+.bub small{display:block;opacity:.6;font-size:.8rem;letter-spacing:.1em}
+.card{border:1px solid rgba(207,216,255,.25);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.ov input,.ov textarea{font:inherit;font-size:1.1rem;color:#fff;background:rgba(10,14,40,.7);border:1px solid rgba(207,216,255,.35);border-radius:10px;padding:.5em .8em;width:100%;outline:none}
+.ov textarea{resize:none}
+.ov input:focus,.ov textarea:focus{border-color:#fff}
+.row{display:flex;gap:8px;margin-top:8px}
+.go{font:inherit;font-size:1.1rem;color:#04050d;background:#dfe6ff;border:0;border-radius:10px;padding:.5em 1em;cursor:pointer}
+.err{color:#ffb4b4;font-size:1rem;min-height:1.2em}
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+<button id="snd" type="button" aria-pressed="false">♪ Play piano</button>
+<div class="stage" aria-hidden="true">
+<div class="moon">
+<b style="width:38%;height:30%;left:18%;top:20%"></b>
+<b style="width:30%;height:34%;left:50%;top:30%"></b>
+<b style="width:24%;height:18%;left:30%;top:56%"></b>
+<i style="width:15%;height:15%;left:20%;top:24%"></i>
+<i style="width:8%;height:8%;left:58%;top:16%"></i>
+<i style="width:21%;height:21%;left:56%;top:50%"></i>
+<i style="width:6%;height:6%;left:28%;top:62%"></i>
+<i style="width:10%;height:10%;left:76%;top:30%"></i>
+<i style="width:5%;height:5%;left:42%;top:40%"></i>
+<span class="label">My Moon</span>
+</div>
+<div class="orbit"></div>
+</div>
+<main>
+<div class="msg">
+<p class="sig">d.LycemStu.</p>
+<p class="txt">“They would lose their purpose then.” The stars may belong to the sky, but you belong to my gaze, and once the heart has found its moon, wandering among the stars feels almost like forgetting. So let them shine for the rest of the world; I have my own moon to lose myself in.</p>
+</div>
+</main>
+<button id="tb" type="button">✉ Text d.LycemStu.</button>
+<button id="hb" type="button">Host</button>
+<div class="ov" id="vo"><div class="box">
+<div class="top"><span>d.LycemStu.</span><button class="x" data-x aria-label="Close">×</button></div>
+<div class="log" id="vlog"></div>
+<div class="err" id="verr"></div>
+<input id="vname" placeholder="Your name" maxlength="40" autocomplete="name">
+<div class="row"><textarea id="vtxt" rows="2" maxlength="1000" placeholder="Ask d.LycemStu."></textarea><button class="go" id="vsend">Send</button></div>
+</div></div>
+<div class="ov" id="ho"><div class="box">
+<div class="top"><span>Host</span><button class="x" data-x aria-label="Close">×</button></div>
+<div id="hlogin"><input id="hpw" type="password" placeholder="Password" autocomplete="current-password"><div class="row"><button class="go" id="hgo">Enter</button></div><div class="err" id="herr"></div></div>
+<div class="log" id="hlog" hidden></div>
+</div></div>
+<p class="quiet">Every heart keeps one quiet orbit.</p>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');let W,H,S=[],sh=[];
+function size(){const d=devicePixelRatio||1;W=c.width=innerWidth*d;H=c.height=innerHeight*d;
+S=Array.from({length:Math.floor(W*H/6000)},()=>({x:Math.random()*W,y:Math.random()*H,r:(Math.random()*1.4+.3)*d,p:Math.random()*6.28,s:Math.random()*1.5+.5}))}
+size();addEventListener('resize',size);
+function frame(t){x.clearRect(0,0,W,H);
+for(const s of S){x.globalAlpha=.35+.65*Math.abs(Math.sin(t/1000*s.s+s.p));x.fillStyle='#fff';x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill()}
+if(Math.random()<.004&&sh.length<2)sh.push({x:Math.random()*W,y:Math.random()*H*.5,l:0});
+sh=sh.filter(m=>{m.x-=14;m.y+=7;m.l++;x.globalAlpha=Math.max(1-m.l/45,0);x.strokeStyle='#dfe6ff';x.lineWidth=1.5;x.beginPath();x.moveTo(m.x,m.y);x.lineTo(m.x+90,m.y-45);x.stroke();return m.l<45});
+requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+
+/* Calm piano, synthesized in the browser (Am - F - C - G) */
+const btn=document.getElementById('snd');let ctx,dry,timer,next=0,step=0,on=false;
+const chords=[[45,52,57,60,64],[41,48,53,57,60],[48,55,60,64,67],[43,50,55,59,62]];
+const pat=[0,2,3,4,3,2,3,1],STEP=.72;
+const hz=m=>440*Math.pow(2,(m-69)/12);
+function setup(){ctx=new (window.AudioContext||window.webkitAudioContext)();
+const master=ctx.createGain();master.gain.value=.5;master.connect(ctx.destination);
+dry=ctx.createGain();dry.connect(master);
+const len=ctx.sampleRate*3.5,buf=ctx.createBuffer(2,len,ctx.sampleRate);
+for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+const rv=ctx.createConvolver();rv.buffer=buf;const wet=ctx.createGain();wet.gain.value=.6;dry.connect(rv);rv.connect(wet);wet.connect(master);next=ctx.currentTime+.1}
+function note(m,t,v,d){const g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+[1,2,3,4].forEach((h,i)=>{const o=ctx.createOscillator();o.type='sine';o.frequency.value=hz(m)*h;const hg=ctx.createGain();hg.gain.value=[1,.32,.1,.04][i];o.connect(hg);hg.connect(g);o.start(t);o.stop(t+d+.1)});g.connect(dry)}
+function sched(){while(next<ctx.currentTime+.6){const ch=chords[Math.floor(step/8)%4],k=step%8;
+if(k===0){note(ch[0]-12,next,.22,4.5)}
+note(ch[pat[k]],next,k===0?.16:.11,3);
+if(k===4&&Math.random()<.7)note(ch[4]+12+(Math.random()<.4?-2:0),next+.05,.09,3.5);
+next+=STEP;step++}}
+btn.onclick=()=>{try{if(!ctx){setup()}if(!on){ctx.resume();timer=setInterval(sched,200);sched();on=true;btn.textContent='♪ Pause piano'}else{clearInterval(timer);ctx.suspend();on=false;btn.textContent='♪ Play piano'}btn.setAttribute('aria-pressed',on)}catch(e){btn.textContent='Sound unavailable'}};
+
+/* Messages (server: netlify/functions/chat.mjs) */
+const $=s=>document.querySelector(s),ls={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const api=async o=>{const r=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(o)});const j=await r.json().catch(()=>({}));if(!r.ok)throw j;return j};
+const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+let tk=ls.g('mm_tk');if(!tk){tk=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()+'xxxxxxxx');ls.s('mm_tk',tk)}
+let poll=0,hpw='';
+const openOv=id=>{$(id).classList.add('show')},closeAll=()=>{document.querySelectorAll('.ov').forEach(o=>o.classList.remove('show'));clearInterval(poll)};
+document.querySelectorAll('[data-x]').forEach(b=>b.onclick=closeAll);
+const when=t=>new Date(t).toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
+async function vload(){try{const {items}=await api({action:'thread',token:tk}),l=$('#vlog');l.replaceChildren();
+if(!items.length){l.append(mk('div','empty','Ask d.LycemStu.'));return}
+for(const m of items){const a=mk('div','bub',m.text);l.append(a);if(m.reply){const r=mk('div','bub me2');r.append(mk('small','','d.LycemStu.'),document.createTextNode(m.reply));l.append(r)}}
+l.scrollTop=l.scrollHeight}catch(e){}}
+$('#tb').onclick=()=>{openOv('#vo');$('#vname').value=ls.g('mm_name')||'';vload();poll=setInterval(vload,15000)};
+$('#vsend').onclick=async()=>{const name=$('#vname').value.trim(),text=$('#vtxt').value.trim(),er=$('#verr');er.textContent='';
+if(!name||!text){er.textContent='Please add your name and a message.';return}
+try{await api({action:'send',name,text,token:tk});ls.s('mm_name',name);$('#vtxt').value='';vload()}catch(e){er.textContent='Could not send. Try again.'}};
+async function hload(){try{const {items}=await api({action:'list',password:hpw}),l=$('#hlog');l.replaceChildren();
+if(!items.length)l.append(mk('div','empty','No messages yet'));
+for(const m of items){const c=mk('div','card');c.append(mk('b','',m.name+' · '+when(m.at)),mk('div','',m.text));
+if(m.reply)c.append(mk('div','bub me2',m.reply));
+const ta=mk('textarea');ta.rows=2;ta.placeholder='Reply…';ta.value=m.reply||'';const g=mk('button','go','Send reply');
+g.onclick=async()=>{if(!ta.value.trim())return;try{await api({action:'reply',password:hpw,id:m.id,reply:ta.value});g.textContent='Sent ✓'}catch(e){g.textContent='Failed'}};
+c.append(ta,g);l.append(c)}}catch(e){}}
+$('#hb').onclick=()=>{openOv('#ho');$('#hpw').value=''};
+$('#hgo').onclick=async()=>{hpw=$('#hpw').value;try{await api({action:'list',password:hpw});$('#hlogin').hidden=true;$('#hlog').hidden=false;hload();poll=setInterval(hload,15000)}catch(e){$('#herr').textContent='Wrong password'}};
+</script>
+</body>
+</html>
